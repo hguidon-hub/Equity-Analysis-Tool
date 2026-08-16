@@ -18,9 +18,9 @@ Author: Hugo Guidon
 
 
 
-# ============================================================
+# =================
 # STOCK INFORMATION
-# ============================================================
+# =================
 def get_stock_info(ticker):
     """
     Retrieve key company information from Yahoo Finance.
@@ -32,9 +32,9 @@ def get_stock_info(ticker):
         dict: Company profile data including name, sector,
               market capitalization, current price and valuation metrics.
     """
-#============================================================
+#=======================
 # HISTORICAL VOLATILITY
-# ============================================================
+# ======================
 def get_historical_volatility(ticker):
     """
     Calculate annualized historical volatility using daily returns.
@@ -48,9 +48,9 @@ def get_historical_volatility(ticker):
     Returns:
         float: Annualized volatility expressed as a percentage.
     """
-# ============================================================
+# ============
 # SHARPE RATIO
-# ============================================================
+# ============
 def get_sharpe_ratio(ticker, risk_free_rate=0.02):
     """
     Compute the Sharpe Ratio of the stock.
@@ -66,9 +66,9 @@ def get_sharpe_ratio(ticker, risk_free_rate=0.02):
     Returns:
         float: Sharpe Ratio.
     """
-# ============================================================
+# =====================
 # FINANCIAL STATEMENTS
-# ============================================================
+# =====================
 def get_financial_data(ticker):
     """
     Download financial statements from Yahoo Finance.
@@ -82,9 +82,9 @@ def get_financial_data(ticker):
     Returns:
         pandas.DataFrame: Financial statement data.
     """
-# ============================================================
+# =====================================
 # BUILD REVENUE / NET INCOME DATAFRAME
-# ============================================================
+# =====================================
 def build_financial_dataframe(income):
     """
     Convert raw financial statement data into a clean DataFrame.
@@ -98,9 +98,9 @@ def build_financial_dataframe(income):
     Returns:
         pandas.DataFrame: Structured financial dataset.
     """
-# ============================================================
+# =============
 # PRINT SUMMARY
-# ============================================================
+# =============
 def print_summary(symbol, stock_info, volatility, sharpe_ratio, df):
     """
     Display a concise equity analysis report.
@@ -108,9 +108,9 @@ def print_summary(symbol, stock_info, volatility, sharpe_ratio, df):
     The report includes company information, valuation metrics,
     historical volatility, Sharpe Ratio and financial highlights.
     """
-# ============================================================
+# ======
 # CHARTS
-# ============================================================
+# ======
 # plot_revenue()
 #   Visualizes company revenue growth over time.
 #
