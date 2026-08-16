@@ -1,4 +1,3 @@
-"""
 EquityAnalysisTool
 
 A Python-based equity research tool that automates company analysis
@@ -13,7 +12,6 @@ Features:
 - Automated summary reporting
 
 Author: Hugo Guidon
-"""
 
 
 
