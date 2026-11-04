@@ -1,120 +1,84 @@
-EquityAnalysisTool
+# EquityAnalysisTool
 
-A Python-based equity research tool that automates company analysis
-using Yahoo Finance data.
+![tests](https://github.com/hguidon-hub/Equity-Analysis-Tool/actions/workflows/tests.yml/badge.svg)
 
-Features:
-- Company profile retrieval
-- Historical volatility analysis
-- Sharpe Ratio calculation
-- Financial statement analysis
-- Revenue and net income visualization
-- Automated summary reporting
+Command-line tool that produces a one-page **risk, valuation and fundamentals** report for any stock
+on Yahoo Finance, US or European, with a chart dashboard and a CSV export of the quarterly figures.
 
-Author: Hugo Guidon
+```
+$ python main.py MC.PA --period 3y --save lvmh.png
+```
 
+## What it covers
 
+| Block | Metrics |
+|---|---|
+| Market | Price, market cap, enterprise value, 52-week range, distance from 52-week high |
+| Valuation | P/E trailing and forward, EV/EBITDA, EV/Revenue, P/B, FCF yield, dividend yield and payout, ROE, debt/equity |
+| Risk | Total return and CAGR vs benchmark, annualised volatility, Sharpe and Sortino on daily excess returns, max drawdown, 1-day historical VaR 95%, beta and correlation vs the local index |
+| Fundamentals | Latest quarter revenue and net income, **YoY** and QoQ growth, gross/operating/net margins, trailing twelve months |
+| Dashboard | Rebased performance vs benchmark, underwater drawdown chart, quarterly revenue and net income, margin trends |
 
+Design choices that matter:
 
-    # =================
-    # STOCK INFORMATION
-    # =================
-    def get_stock_info(ticker):
-    """
-    Retrieve key company information from Yahoo Finance.
+- **Local benchmark by default.** Beta is computed against the CAC 40 for `.PA` tickers, the DAX for
+  `.DE`, the FTSE 100 for `.L` and so on, S&P 500 otherwise. Beta of a French stock against the
+  S&P 500 is not a meaningful number. Override with `--benchmark`.
+- **Year-on-year growth, not just quarter-on-quarter.** QoQ mixes in seasonality (a retailer's Q4 vs Q3
+  says nothing about the business), so YoY against the same quarter last year is the headline figure.
+- **Sharpe on excess returns.** The risk-free rate is converted to a daily rate and subtracted before
+  computing mean and volatility. USD tickers use the 13-week T-bill (`^IRX`); for other currencies
+  pass `--rate`.
+- **Currency-aware.** Market data is shown in the trading currency and statements in the reporting
+  currency, with a warning when they differ (ADRs, dual listings).
+- **Robust to missing data.** Every field prints `n/a` rather than crashing when Yahoo returns nothing,
+  which is common for ETFs, small caps and non-US listings.
 
-    Parameters:
-        ticker (str): Stock ticker symbol (e.g. AAPL, MSFT).
+## Install and run
 
-    Returns:
-        dict: Company profile data including name, sector,
-              market capitalization, current price and valuation metrics.
-    """
-    #=======================
-    # HISTORICAL VOLATILITY
-    # ======================
-    def get_historical_volatility(ticker):
-    """
-    Calculate annualized historical volatility using daily returns.
+```bash
+git clone https://github.com/hguidon-hub/Equity-Analysis-Tool.git
+cd Equity-Analysis-Tool
+pip install -r requirements.txt
 
-    Volatility measures the dispersion of stock returns and is
-    commonly used as a proxy for market risk.
+python main.py AAPL                                          # report + chart window
+python main.py MC.PA --period 3y                             # benchmark auto-set to ^FCHI
+python main.py NVDA -b ^NDX -r 0.04 --save nvda.png --csv nvda.csv --no-plot
+```
 
-    Parameters:
-        ticker (str): Stock ticker symbol.
+## Project structure
 
-    Returns:
-        float: Annualized volatility expressed as a percentage.
-    """
-    # ============
-    # SHARPE RATIO
-    # ============
-    def get_sharpe_ratio(ticker, risk_free_rate=0.02):
-    """
-    Compute the Sharpe Ratio of the stock.
+```
+equityanalysis/
+  metrics.py        Returns, volatility, Sharpe, Sortino, drawdown, VaR, beta (pure functions)
+  fundamentals.py   Quarterly table, margins, YoY growth, TTM, valuation snapshot
+  analysis.py       Yahoo Finance access and orchestration
+  report.py         Text report and quarterly table
+  plots.py          2x2 matplotlib dashboard
+main.py             CLI
+tests/              14 offline unit tests (fake Yahoo ticker, no network)
+```
 
-    Sharpe Ratio = (Expected Return - Risk-Free Rate) / Volatility
+## Validation
 
-    A higher value indicates better risk-adjusted performance.
+```bash
+python -m unittest discover -s tests -t . -v
+```
 
-    Parameters:
-        ticker (str): Stock ticker symbol.
-        risk_free_rate (float): Annual risk-free rate.
+The tests run on every push (GitHub Actions) and check, among others: max drawdown on a known path,
+beta of exactly 2 for a 2x leveraged series, Sharpe against a hand computation, Sortino rising with
+upside only, CAGR, historical VaR, YoY vs QoQ growth on a known income statement, unit conversions of
+Yahoo fields (debt/equity in percent, yields from cash amounts) and a full report with empty data.
 
-    Returns:
-        float: Sharpe Ratio.
-    """
-    # =====================
-    # FINANCIAL STATEMENTS
-    # =====================
-    def get_financial_data(ticker):
-    """
-    Download financial statements from Yahoo Finance.
+## Limitations
 
-    Retrieves revenue, net income and other key accounting data
-    used for company analysis.
+- Yahoo Finance data is free, delayed and sometimes incomplete; quarterly statements usually cover
+  only the last 5 to 6 quarters, which limits YoY history.
+- Risk metrics are backward-looking and use simple daily returns; VaR is historical, with no
+  volatility scaling.
+- Valuation multiples come from Yahoo as published, without adjustment for one-offs or
+  share-based compensation.
 
-    Parameters:
-        ticker (str): Stock ticker symbol.
+## Author
 
-    Returns:
-        pandas.DataFrame: Financial statement data.
-    """
-    # =====================================
-    # BUILD REVENUE / NET INCOME DATAFRAME
-    # =====================================
-    def build_financial_dataframe(income):
-    """
-    Convert raw financial statement data into a clean DataFrame.
-
-    The resulting DataFrame is used for reporting and charting
-    revenue and profitability trends over time.
-
-    Parameters:
-        income (DataFrame): Raw income statement data.
-
-    Returns:
-        pandas.DataFrame: Structured financial dataset.
-    """
-    # =============
-    # PRINT SUMMARY
-    # =============
-    def print_summary(symbol, stock_info, volatility, sharpe_ratio, df):
-    """
-    Display a concise equity analysis report.
-
-    The report includes company information, valuation metrics,
-    historical volatility, Sharpe Ratio and financial highlights.
-    """
-    # ======
-    # CHARTS
-    # ======
-    # plot_revenue()
-    #   Visualizes company revenue growth over time.
-    #
-    # plot_net_income()
-    #   Visualizes profitability trends over time.
-    #
-    # plot_revenue_vs_income()
-    #   Compares revenue and net income to evaluate margins
-    #   and operational efficiency.
+Hugo Guidon, MSc in Finance (Financial Markets), emlyon business school.
